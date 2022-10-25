@@ -67,7 +67,15 @@ merge_data <- merge_data %>%
 
 # Uses descriptive activity names to name the activities in the data set ----
 merge_data <- merge_data %>%
-  mutate(activity = activites[merge_data$activity, 2])
+  mutate(activity = case_when(
+    activity == 1 ~ "WALKING",
+    activity == 2 ~ "WALKING_UPSTAIRS",
+    activity == 3 ~ "WALKING_DOWNSTAIRS",
+    activity == 4 ~ "SITTING",
+    activity == 5 ~ "STANDING",
+    activity == 6 ~ "LAYING",
+    TRUE ~ NA_character_
+  ))
 
 # Appropriately labels the data set with descriptive variable names ----
 names(merge_data) <- str_replace_all(string = names(merge_data),
@@ -85,8 +93,19 @@ names(merge_data) <- str_replace_all(string = names(merge_data),
 names(merge_data) <- str_replace_all(string = names(merge_data),
                                      pattern = "BodyBody",
                                      replacement = "Body")
+names(merge_data) <- str_replace_all(string = names(merge_data),
+                                     pattern = "^t", 
+                                     replacement = "time")
+names(merge_data) <- str_replace_all(string = names(merge_data), 
+                                     pattern =  "^f", 
+                                     replacement = "frequency")
 
 # From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject ----
 tidy_data <- merge_data %>% 
   group_by(activity, subject) %>% 
   summarize(across(.cols = everything(), .fns = mean))
+
+# Save data sets
+write.table(x = merge_data, 
+            file = "tidy_data.txt", 
+            quote = FALSE)
